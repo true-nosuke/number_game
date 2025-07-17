@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スーパー数あてゲームーのすけのゲーム</title>
     <link rel="stylesheet" href="src/css/style.css">
     <link rel="icon" href="favicon.ico">
-</head>
-  <style>
+    <style>
         .game-frame-wrapper {
             text-align: center;
             margin: 2rem 0;
@@ -21,41 +21,59 @@
             border: 2px solid #ccc;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
             position: relative;
-        }
-
-        .game-frame canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
             background: #231F20;
+            padding: 2rem;
+            box-sizing: border-box;
+            color: white;
         }
     </style>
+</head>
 
 <body style="margin: 0; padding: 0;">
     <header>
         <h1>のすけtrue ダウンロード無しでプレイ可能</h1>
     </header>
 
-
-
-
-
-        <section class="game-frame-wrapper">
+    <section class="game-frame-wrapper">
         <div class="game-frame">
-            <canvas id="gameCanvas">
-
-                
-            </canvas>
+            <h1>スーパー数あてゲーム</h1>
+            <p>1〜9999の数字を当ててください。</p>
+            <input type="number" id="guess" placeholder="数字を入力" min="1" max="100">
+            <button onclick="checkGuess()">答える</button>
+            <p id="message"></p>
         </div>
-        </section>
+    </section>
 
-
-
-
-
-        
     <footer>
         <p>&copy; 2025 のすけtrue</p>
     </footer>
+
+    <script>
+        let targetNumber = Math.floor(Math.random() * 9999) + 1;
+        let count = 0;
+
+        function checkGuess() {
+            const input = document.getElementById('guess');
+            const guess = Number(input.value);
+            const message = document.getElementById('message');
+            count++;
+
+            if (guess < 1 || guess > 9999) {
+                message.textContent = "1〜100の範囲で入力してください。";
+            } else if (guess < targetNumber) {
+                message.textContent = "もっと大きい数字です。";
+            } else if (guess > targetNumber) {
+                message.textContent = "もっと小さい数字です。";
+            } else {
+                message.textContent = `正解！ 答えは ${targetNumber} でした。 ${count} 回目でクリア！`;
+                input.disabled = true;
+            }
+            input.value = '';
+            input.focus();
+        }
+    </script>
+</body>
+
+</html>
