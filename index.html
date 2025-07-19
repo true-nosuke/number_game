@@ -65,7 +65,7 @@
             count++;
 
             if (guess < 1 || guess > 9999) {
-                message.textContent = "1〜100の範囲で入力してください。";
+                message.textContent = "1〜9999の範囲で入力してください。";
             } else if (guess < targetNumber) {
                 message.textContent = "もっと大きい数字です。";
             } else if (guess > targetNumber) {
