@@ -40,8 +40,12 @@
         <div class="game-frame">
             <h1>スーパー数あてゲーム</h1>
             <p>1〜9999の数字を当ててください。</p>
-            <input type="number" id="guess" placeholder="数字を入力" min="1" max="100">
-            <button onclick="checkGuess()">答える</button>
+            <div class="cp_iptxt">
+                <label class="ef">
+                    <input type="number" id="guess" placeholder="数字を入力" min="1" max="9999" required>
+                </label>
+            </div>
+            <a onclick="checkGuess()" class="button01">答える</a>
             <p id="message"></p>
         </div>
     </section>
