@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>謎の研究所からの脱出</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        #room {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(to bottom, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            transition: all 0.5s ease;
+        }
+
+        .room-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .room1 { background: linear-gradient(to bottom, #34495e 0%, #2c3e50 50%, #1a252f 100%); }
+        .room2 { background: linear-gradient(to bottom, #27ae60 0%, #2ecc71 50%, #27ae60 100%); }
+        .room3 { background: linear-gradient(to bottom, #e74c3c 0%, #c0392b 50%, #e74c3c 100%); }
+        .room4 { background: linear-gradient(to bottom, #f39c12 0%, #e67e22 50%, #f39c12 100%); }
+
+        #player {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s ease;
+            border: 3px solid #2980b9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .interactive {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .interactive:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .door {
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(to bottom, #8b4513 0%, #654321 50%, #8b4513 100%);
+            border: 3px solid #5d2f0a;
+        }
+
+        .computer {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to bottom, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            border: 2px solid #1a252f;
+        }
+
+        .key {
+            width: 30px;
+            height: 15px;
+            background: #f1c40f;
+            border-radius: 5px;
+            border: 2px solid #e67e22;
+        }
+
+        .safe {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(to bottom, #34495e 0%, #2c3e50 50%, #34495e 100%);
+            border: 3px solid #1a252f;
+            border-radius: 10px;
+        }
+
+        .lever {
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(to right, #e74c3c 0%, #c0392b 50%, #e74c3c 100%);
+            border: 2px solid #a93226;
+            border-radius: 10px;
+        }
+
+        #inventory {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+            min-width: 150px;
+        }
+
+        #messageBox {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            text-align: center;
+            display: none;
+            font-size: 14px;
+        }
+
+        #codeInput {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            display: none;
+            text-align: center;
+        }
+
+        #codeInput input {
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            text-align: center;
+        }
+
+        #codeInput button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .room-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            width: 150px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #e74c3c, #f39c12, #27ae60);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .interactive {
+                min-width: 50px;
+                min-height: 50px;
+            }
+            
+            #player {
+                width: 35px;
+                height: 35px;
+            }
+            
+            #messageBox {
+                font-size: 12px;
+                padding: 10px 15px;
+            }
+        }
+
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .victory-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #f1c40f;
+        }
+
+        .victory-screen button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="room" class="room1">
+            <!-- Room 1: スタート部屋 -->
+            <div class="interactive computer" style="top: 30%; right: 20px;" data-type="computer" data-id="comp1"></div>
+            <div class="interactive door" style="top: 20%; left: 20px;" data-type="door" data-target="room2" data-locked="true"></div>
+            <div class="interactive key" style="top: 60%; right: 50px;" data-type="key" data-id="key1"></div>
+        </div>
+        
+        <div id="player"></div>
+        
+        <div id="inventory">
+            <h4>アイテム:</h4>
+            <div id="inventoryItems"></div>
+        </div>
+        
+        <div class="room-indicator">
+            部屋 <span id="currentRoom">1</span> / 4
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div id="messageBox"></div>
+        
+        <div id="codeInput">
+            <h3>コードを入力してください</h3>
+            <input type="text" id="codeField" placeholder="4桁の数字を入力">
+            <br>
+            <button onclick="checkCode()">確認</button>
+            <button onclick="closeCodeInput()">キャンセル</button>
+        </div>
+        
+        <div class="victory-screen" id="victoryScreen">
+            <h1>🎉 脱出成功！ 🎉</h1>
+            <p>おめでとうございます！謎の研究所から無事に脱出できました。</p>
+            <p>プレイ時間: <span id="playTime"></span></p>
+            <button onclick="restartGame()">もう一度プレイ</button>
+        </div>
+    </div>
+
+    <script>
+        class EscapeGame {
+            constructor() {
+                this.currentRoom = 1;
+                this.inventory = [];
+                this.gameState = {
+                    room1Computer: false,
+                    room2Safe: false,
+                    room3Lever: false,
+                    room4Computer: false,
+                    hasKey1: false,
+                    hasKey2: false,
+                    hasCard: false,
+                    safeCode: '2573',
+                    computerCode: '1984',
+                    // ドアの状態を管理
+                    doors: {
+                        room1ToRoom2: true,  // locked
+                        room2ToRoom3: true,  // locked
+                        room3ToRoom4: true,  // locked
+                        room4ToExit: true    // locked
+                    }
+                };
+                this.startTime = Date.now();
+                this.roomLayouts = {
+                    1: [
+                        { type: 'computer', id: 'comp1', x: 'calc(100% - 80px)', y: '30%' },
+                        { type: 'door', target: 'room2', x: '20px', y: '20%' },
+                        { type: 'key', id: 'key1', x: 'calc(100% - 80px)', y: '60%' }
+                    ],
+                    2: [
+                        { type: 'door', target: 'room1', x: 'calc(100% - 100px)', y: '20%' },
+                        { type: 'door', target: 'room3', x: '20px', y: '20%' },
+                        { type: 'safe', id: 'safe1', x: '50%', y: '40%' },
+                        { type: 'computer', id: 'comp2', x: 'calc(100% - 80px)', y: '70%' }
+                    ],
+                    3: [
+                        { type: 'door', target: 'room2', x: 'calc(100% - 100px)', y: '20%' },
+                        { type: 'door', target: 'room4', x: '20px', y: '20%' },
+                        { type: 'lever', id: 'lever1', x: '50%', y: '30%' },
+                        { type: 'key', id: 'key2', x: '70%', y: '70%' }
+                    ],
+                    4: [
+                        { type: 'door', target: 'room3', x: 'calc(100% - 100px)', y: '20%' },
+                        { type: 'door', target: 'exit', x: '50%', y: '10%' },
+                        { type: 'computer', id: 'comp3', x: '50%', y: '50%' }
+                    ]
+                };
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.showMessage('謎の研究所に閉じ込められました。脱出の方法を探しましょう！', 3000);
+                this.updateProgress();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('click', (e) => this.handleClick(e));
+                document.addEventListener('touchstart', (e) => this.handleClick(e));
+                
+                // キーボード入力
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && document.getElementById('codeInput').style.display === 'block') {
+                        this.checkCode();
+                    }
+                });
+            }
+
+            handleClick(e) {
+                const interactive = e.target.closest('.interactive');
+                if (interactive) {
+                    this.interactWithObject(interactive);
+                }
+            }
+
+            interactWithObject(obj) {
+                const type = obj.dataset.type;
+                const id = obj.dataset.id;
+                console.log('Interacting with object:', type, id); // デバッグ用
+                
+                switch (type) {
+                    case 'computer':
+                        this.interactComputer(id);
+                        break;
+                    case 'door':
+                        this.interactDoor(obj);
+                        break;
+                    case 'key':
+                        this.collectKey(id, obj);
+                        break;
+                    case 'safe':
+                        this.interactSafe(id);
+                        break;
+                    case 'lever':
+                        this.interactLever(id);
+                        break;
+                    default:
+                        console.log('Unknown object type:', type);
+                        this.showMessage('このオブジェクトは操作できません。');
+                        break;
+                }
+            }
+
+            interactComputer(id) {
+                console.log('Computer interaction:', id); // デバッグ用
+                switch (id) {
+                    case 'comp1':
+                        if (!this.gameState.room1Computer) {
+                            this.showMessage('コンピューターにメッセージが表示されています: "金庫のコードは 2573"');
+                            this.gameState.room1Computer = true;
+                            this.updateProgress();
+                        } else {
+                            this.showMessage('既に情報を確認済みです。');
+                        }
+                        break;
+                    case 'comp2':
+                        // 確実にメッセージのみ表示
+                        this.showMessage('システム: "カードキーがあれば次の部屋に進めます。レバーと追加の鍵も重要です..."');
+                        return; // 確実に処理を終了
+                    case 'comp3':
+                        // まず情報を表示
+                        if (!this.gameState.room4Computer) {
+                            this.showMessage('コンピューターに重要な情報が表示されています: "最終脱出コードは 1984"');
+                            this.gameState.room4Computer = true;
+                            this.updateProgress();
+                        } else if (this.gameState.hasCard && this.gameState.hasKey2) {
+                            this.showCodeInput('finalDoor');
+                        } else if (!this.gameState.hasCard) {
+                            this.showMessage('カードキーが必要です。');
+                        } else if (!this.gameState.hasKey2) {
+                            this.showMessage('もう一つの鍵が必要です。');
+                        } else {
+                            this.showMessage('既に情報を確認済みです。必要なアイテムを集めましょう。');
+                        }
+                        break;
+                    default:
+                        console.log('Unknown computer:', id);
+                        this.showMessage('このコンピューターは使用できません。');
+                        break;
+                }
+            }
+
+            interactDoor(obj) {
+                const target = obj.dataset.target;
+                const isLocked = obj.dataset.locked === 'true';
+                
+                if (isLocked) {
+                    if (target === 'room2' && this.gameState.hasKey1) {
+                        this.gameState.doors.room1ToRoom2 = false;
+                        this.moveToRoom(2);
+                        this.showMessage('ドアが開きました！');
+                    } else if (target === 'room3' && this.gameState.hasCard) {
+                        this.gameState.doors.room2ToRoom3 = false;
+                        this.moveToRoom(3);
+                        this.showMessage('カードキーでドアが開きました！');
+                    } else if (target === 'room4' && this.gameState.room3Lever) {
+                        this.gameState.doors.room3ToRoom4 = false;
+                        this.moveToRoom(4);
+                        this.showMessage('レバーの効果でドアが開きました！');
+                    } else if (target === 'exit' && this.gameState.hasCard && this.gameState.hasKey2) {
+                        this.showCodeInput('finalDoor');
+                    } else {
+                        this.showMessage('ドアが鍵で閉まっています。');
+                    }
+                } else {
+                    if (target === 'room1') this.moveToRoom(1);
+                    else if (target === 'room2') this.moveToRoom(2);
+                    else if (target === 'room3') this.moveToRoom(3);
+                    else if (target === 'room4') this.moveToRoom(4);
+                }
+            }
+
+            collectKey(id, obj) {
+                if (id === 'key1' && !this.gameState.hasKey1) {
+                    this.gameState.hasKey1 = true;
+                    this.inventory.push('鍵1');
+                    obj.style.display = 'none';
+                    this.showMessage('鍵を手に入れました！');
+                    this.updateInventory();
+                    this.updateProgress();
+                } else if (id === 'key2' && !this.gameState.hasKey2) {
+                    this.gameState.hasKey2 = true;
+                    this.inventory.push('鍵2');
+                    obj.style.display = 'none';
+                    this.showMessage('2つ目の鍵を手に入れました！');
+                    this.updateInventory();
+                    this.updateProgress();
+                }
+            }
+
+            interactSafe(id) {
+                if (id === 'safe1') {
+                    if (this.gameState.room1Computer) {
+                        this.showCodeInput('safe');
+                    } else {
+                        this.showMessage('コードがわかりません。手がかりを探しましょう。');
+                    }
+                }
+            }
+
+            interactLever(id) {
+                if (id === 'lever1' && !this.gameState.room3Lever) {
+                    this.gameState.room3Lever = true;
+                    this.showMessage('レバーを引きました！どこかでドアが開く音が聞こえます...');
+                    this.updateProgress();
+                }
+            }
+
+            showCodeInput(type) {
+                document.getElementById('codeInput').style.display = 'block';
+                document.getElementById('codeField').value = '';
+                document.getElementById('codeField').dataset.type = type;
+                document.getElementById('codeField').focus();
+            }
+
+            checkCode() {
+                const input = document.getElementById('codeField');
+                const code = input.value;
+                const type = input.dataset.type;
+                
+                if (type === 'safe' && code === this.gameState.safeCode) {
+                    this.gameState.room2Safe = true;
+                    this.gameState.hasCard = true;
+                    this.inventory.push('カードキー');
+                    this.showMessage('正解！カードキーを手に入れました！');
+                    this.updateInventory();
+                    this.updateProgress();
+                    this.closeCodeInput();
+                } else if (type === 'finalDoor' && code === this.gameState.computerCode) {
+                    this.showMessage('脱出成功！おめでとうございます！');
+                    this.gameWin();
+                } else {
+                    this.showMessage('コードが間違っています。');
+                    input.value = '';
+                }
+            }
+
+            closeCodeInput() {
+                document.getElementById('codeInput').style.display = 'none';
+            }
+
+            moveToRoom(roomNumber) {
+                this.currentRoom = roomNumber;
+                const room = document.getElementById('room');
+                room.className = `room${roomNumber}`;
+                
+                // 部屋のオブジェクトを更新
+                this.updateRoomObjects();
+                
+                document.getElementById('currentRoom').textContent = roomNumber;
+                
+                // 特別なメッセージ
+                if (roomNumber === 4) {
+                    this.showMessage('最後の部屋です。まずコンピューターで情報を確認しましょう！');
+                }
+            }
+
+            updateRoomObjects() {
+                // 既存のinteractiveオブジェクトを削除
+                const existingObjects = document.querySelectorAll('.interactive');
+                existingObjects.forEach(obj => obj.remove());
+                
+                // 新しい部屋のオブジェクトを追加
+                const layout = this.roomLayouts[this.currentRoom];
+                layout.forEach(obj => {
+                    const element = document.createElement('div');
+                    element.className = `interactive ${obj.type}`;
+                    element.style.left = obj.x;
+                    element.style.top = obj.y;
+                    
+                    if (obj.type === 'door') {
+                        element.dataset.type = 'door';
+                        element.dataset.target = obj.target;
+                        
+                        // ドアの状態をゲーム状態から動的に設定
+                        let isLocked = false;
+                        if (this.currentRoom === 1 && obj.target === 'room2') {
+                            isLocked = this.gameState.doors.room1ToRoom2;
+                        } else if (this.currentRoom === 2 && obj.target === 'room3') {
+                            isLocked = this.gameState.doors.room2ToRoom3;
+                        } else if (this.currentRoom === 3 && obj.target === 'room4') {
+                            isLocked = this.gameState.doors.room3ToRoom4;
+                        } else if (this.currentRoom === 4 && obj.target === 'exit') {
+                            isLocked = this.gameState.doors.room4ToExit;
+                        }
+                        
+                        element.dataset.locked = isLocked.toString();
+                    } else {
+                        element.dataset.type = obj.type;
+                        if (obj.id) element.dataset.id = obj.id;
+                    }
+                    
+                    // 既に取得したアイテムは非表示
+                    if (obj.type === 'key') {
+                        if ((obj.id === 'key1' && this.gameState.hasKey1) ||
+                            (obj.id === 'key2' && this.gameState.hasKey2)) {
+                            element.style.display = 'none';
+                        }
+                    }
+                    
+                    document.getElementById('room').appendChild(element);
+                });
+            }
+
+            updateInventory() {
+                const inventoryItems = document.getElementById('inventoryItems');
+                inventoryItems.innerHTML = this.inventory.length > 0 
+                    ? this.inventory.join(', ') 
+                    : 'なし';
+            }
+
+            updateProgress() {
+                let progress = 0;
+                if (this.gameState.room1Computer) progress += 16;
+                if (this.gameState.hasKey1) progress += 16;
+                if (this.gameState.room2Safe) progress += 17;
+                if (this.gameState.hasKey2) progress += 17;
+                if (this.gameState.room3Lever) progress += 17;
+                if (this.gameState.room4Computer) progress += 17;
+                
+                document.getElementById('progressFill').style.width = progress + '%';
+            }
+
+            showMessage(message, duration = 2000) {
+                const messageBox = document.getElementById('messageBox');
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, duration);
+            }
+
+            gameWin() {
+                const playTime = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(playTime / 60);
+                const seconds = playTime % 60;
+                
+                document.getElementById('playTime').textContent = 
+                    `${minutes}分${seconds}秒`;
+                document.getElementById('victoryScreen').style.display = 'flex';
+            }
+
+            restartGame() {
+                location.reload();
+            }
+        }
+
+        // グローバル関数
+        function checkCode() {
+            game.checkCode();
+        }
+
+        function closeCodeInput() {
+            game.closeCodeInput();
+        }
+
+        function restartGame() {
+            game.restartGame();
+        }
+
+        // ゲーム開始
+        let game;
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new EscapeGame();
+        });
+    </script>
+</body>
+</html>
